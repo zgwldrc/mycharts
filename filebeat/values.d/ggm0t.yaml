@@ -1,0 +1,121 @@
+daemonset:
+  filebeatConfig:
+    filebeat.yml: |-
+      logging.metrics.enabled: false
+
+      filebeat.inputs:
+      - type: filestream
+        id: normal
+        paths:
+          - /var/log/pods/**/*.log
+        prospector.scanner.exclude_files:
+          - '^/var/log/pods/apisix_apisix'
+          - '^/var/log/pods/ggm_api'
+        processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            default_indexers.enabled: false
+            default_matchers.enabled: false
+            indexers:
+            - pod_uid: ~
+            matchers:
+            - logs_path:
+                resource_type: "pod"
+                logs_path: "/var/log/pods/"
+        - drop_event:
+            when:
+              not:
+                has_fields: ['kubernetes.labels.osindex']
+        - dissect:
+            tokenizer: "%{timestamp} %{stream} %{capital-letter} %{message}"
+            field: "message"
+            target_prefix: ""
+            overwrite_keys: true
+
+      - type: filestream
+        id: apisix
+        paths:
+          - /var/log/pods/apisix_apisix-*/*/*.log
+        processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            default_indexers.enabled: false
+            default_matchers.enabled: false
+            indexers:
+            - pod_uid: ~
+            matchers:
+            - logs_path:
+                resource_type: "pod"
+                logs_path: "/var/log/pods/"
+        - dissect:
+            tokenizer: "%{timestamp} %{stream} %{capital-letter} %{message}"
+            field: "message"
+            target_prefix: ""
+            overwrite_keys: true
+        - if:
+            equals:
+              stream: "stdout"
+          then:
+            - decode_json_fields:
+                fields: ["message"]
+                target: ""
+                max_depth: 2
+                overwrite_keys: true
+                add_error_key: true
+            - add_fields:
+                target: kubernetes.labels
+                fields:
+                  osindex: apisix-access
+          else:
+            - add_fields:
+                target: kubernetes.labels
+                fields:
+                  osindex: apisix-error
+
+      - type: filestream
+        id: ggm-api
+        paths:
+          - /var/log/pods/ggm_api*/*/*.log
+        parsers:
+        - multiline:
+            type: pattern
+            pattern: '\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z (stderr|stdout) F \d{4}-\d\d-\d\d'
+            negate: true
+            match: after
+        processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            default_indexers.enabled: false
+            default_matchers.enabled: false
+            indexers:
+            - pod_uid: ~
+            matchers:
+            - logs_path:
+                resource_type: "pod"
+                logs_path: "/var/log/pods/"
+        - dissect:
+            tokenizer: "%{timestamp} %{stream} %{capital-letter} %{message}"
+            field: "message"
+            target_prefix: ""
+            overwrite_keys: true
+        - replace:
+            fields:
+              - field: "message"
+                pattern: '\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z (stderr|stdout) F '
+                replacement: ""
+            ignore_missing: false
+            fail_on_error: false
+
+      processors:
+        - drop_fields:
+            fields: ["agent", "input", "host", "capital-letter", "kubernetes.node.labels"]
+            ignore_missing: true
+        - dissect:
+            tokenizer: "/var/log/pods/%{logkey1}/%{kubernetes.container.name}/%{logkey2}.log"
+            field: "log.file.path"
+            target_prefix: ""
+        - drop_fields:
+            fields: ['logkey1', 'logkey2']
+      output.logstash:
+        hosts: ["logstash-logstash.devops:5044"]
+      
