@@ -1,0 +1,61 @@
+replicas: 1
+resources:
+  requests:
+    cpu: "100m"
+    memory: "1536Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1536Mi"
+tolerations:
+- key: devopsOnly
+  operator: Exists
+logstashPipeline:
+ logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+        if [kubernetes][labels][osindex] {
+            mutate { add_field => { "[@metadata][target_index]" => "%{[kubernetes][labels][osindex]}-%{+YYYY.MM.dd}" } }
+            if [kubernetes][labels][osindex] == "apisix" {
+              if [upstream_connect_time] == "" {
+                mutate {replace => { "upstream_connect_time" => 0.0 }}
+              } else {
+                mutate {convert => { "upstream_connect_time" => "float" }}
+              }
+              if [upstream_header_time] == "" {
+                mutate {replace => { "upstream_header_time" => 0.0 }}
+              } else {
+                mutate {convert => { "upstream_header_time" => "float" }}
+              }
+              if [upstream_response_time] == "" {
+                mutate {replace => { "upstream_response_time" => 0.0 }}
+              } else {
+                mutate {convert => { "upstream_response_time" => "float" }}
+              }
+              if [upstream_response_length] == "" {
+                mutate {replace => { "upstream_response_length" => 0 }}
+              } else {
+                mutate {convert => { "upstream_response_length" => "integer" }}
+              }
+              if [upstream_status] == "" {
+                mutate {replace => { "upstream_status" => 0 }}
+              } else {
+                mutate {convert => { "upstream_status" => "integer" }}
+              }
+            }
+        } else {
+            mutate { add_field => { "[@metadata][target_index]" => "unknown-%{+YYYY}" } }
+        }
+    }
+    output {
+      opensearch {
+        hosts       => "https://opensearch-cluster-master.devops:9200"
+        user        => "admin"
+        password    => "admin"
+        index       => "%{[@metadata][target_index]}"
+        ssl_certificate_verification => false
+      }
+    }

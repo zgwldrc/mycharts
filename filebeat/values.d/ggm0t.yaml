@@ -1,4 +1,11 @@
 daemonset:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      cpu: "500m"
+      memory: "500Mi"
   filebeatConfig:
     filebeat.yml: |-
       logging.metrics.enabled: false

@@ -172,7 +172,7 @@ rbac:
 
 gateway:
   # -- Apache APISIX service type for user access itself
-  type: NodePort
+  type: ClusterIP
   # -- Setting how the Service route external traffic
   # If you want to keep the client source IP, you can set this to Local.
 
@@ -372,7 +372,7 @@ extraInitContainers: []
 
 discovery:
   # -- Enable or disable Apache APISIX integration service discovery
-  enabled: true
+  enabled: false
   # -- Registry is the same to the one in APISIX [config-default.yaml](https://github.com/apache/apisix/blob/master/conf/config-default.yaml#L281),
   # and refer to such file for more setting details. also refer to [this documentation for integration service discovery](https://apisix.apache.org/docs/apisix/discovery)
   registry:
@@ -411,11 +411,11 @@ discovery:
     #
     # the minimal Kubernetes example:
     # ```
-    kubernetes:
-      service:
-        schema: https
-        host: ${KUBERNETES_SERVICE_HOST}
-        port: ${KUBERNETES_SERVICE_PORT}
+    # kubernetes:
+    #   service:
+    #     schema: https
+    #     host: ${KUBERNETES_SERVICE_HOST}
+    #     port: ${KUBERNETES_SERVICE_PORT}
     # ```
     #
     # The prerequisites for the above minimal Kubernetes example:

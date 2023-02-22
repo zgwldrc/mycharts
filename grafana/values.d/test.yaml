@@ -1,0 +1,14 @@
+service:
+  type: NodePort
+persistence:
+  size: 20Gi
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+tolerations:
+  - key: devopsOnly
+    operator: Exists

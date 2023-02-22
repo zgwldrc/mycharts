@@ -1,0 +1,29 @@
+apisix:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1024Mi"
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+discovery:
+  # -- Enable or disable Apache APISIX integration service discovery
+  enabled: false
+  # -- Registry is the same to the one in APISIX [config-default.yaml](https://github.com/apache/apisix/blob/master/conf/config-default.yaml#L281),
+  # and refer to such file for more setting details. also refer to [this documentation for integration service discovery](https://apisix.apache.org/docs/apisix/discovery)
+  # registry:
+  #   nacos:
+  #     host:
+  #       - "http://nacos:nacos@127.0.0.1:8848"
+  #     prefix: "/nacos/v1/"
+etcd:
+  auth:
+    rbac:
+      user: ""
+      password: ""
+  
+    

@@ -1,0 +1,34 @@
+controller:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+dex:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+redis:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+repoServer:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+applicationSet:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+notifications:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+server:
+  tolerations:
+    - key: devopsOnly
+      operator: Exists
+  service:
+    type: NodePort
+    nodePortHttp: 30080
+configs:
+  cm:
+    exec.enabled: true

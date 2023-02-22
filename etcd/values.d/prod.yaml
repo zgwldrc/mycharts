@@ -1,0 +1,10 @@
+replicaCount: 3
+auth:
+  rbac:
+    create: true
+    rootPassword: "your random password"
+tolerations:
+- key: devopsOnly
+  operator: Exists
+persistence:
+  size: 8Gi

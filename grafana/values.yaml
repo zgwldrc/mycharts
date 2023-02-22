@@ -169,7 +169,7 @@ podPortName: grafana
 ##
 service:
   enabled: true
-  type: NodePort
+  type: ClusterIP
   port: 80
   targetPort: 3000
     # targetPort: 4181 To be used with a proxy extraContainer
@@ -669,8 +669,8 @@ dashboards:
     k8s-views-pods:
       url: https://raw.githubusercontent.com/zgwldrc/grafana-dashboards-kubernetes/main/dashboards/k8s-views-pods.json
       token: ''
-    msk-stream:
-      url: https://raw.githubusercontent.com/zgwldrc/grafana-dashboards-kubernetes/main/dashboards/msk-stream.json
+    msk-views-consumer-group:
+      url: https://raw.githubusercontent.com/zgwldrc/grafana-dashboards-kubernetes/main/dashboards/msk-views-consumer-group.json
       token: ''
 
 ## Reference to external ConfigMap per provider. Use provider name as key and ConfigMap name as value.
